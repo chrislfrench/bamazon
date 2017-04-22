@@ -1,6 +1,8 @@
 var mysql = require('mysql');
 var config = require('./config.js');
 var inquirer = require('inquirer');
+var table = require('console.table')
+
 
 // MySQL Connection
 var connection = mysql.createConnection({
@@ -15,6 +17,7 @@ var connection = mysql.createConnection({
 connection.connect(function(err){
 	if(err) throw err;
 	console.log("connected as id" + connection.threadId);
+	console.log("");
 
 });
 
@@ -23,8 +26,10 @@ function start()
 {
     connection.query('SELECT id,product_name,price FROM products', function (error, result) {
       if (error) throw error;
-      console.log('Bamazon Items Available');
-      console.log(result);
+      console.log('/////Bamazon Items Available/////');
+      // console.log(result);
+      console.log("");
+      console.table(result);
       
       inquirer.prompt([
             { name: "productID",
@@ -39,7 +44,7 @@ function start()
               var prodID = result.productID;
               var howMany = result.howMany;
 
-              connection.query('SELECT stock_quantity,price FROM products WHERE id = ' + prodID, function (error, result) {
+              connection.query('SELECT stock_quantity,price,product_name FROM products WHERE id = ' + prodID, function (error, result) {
                     
                     if (error) throw error;
                     
@@ -50,9 +55,11 @@ function start()
                     
                     var stockQty = result[0].stock_quantity;
                     var itemCost = result[0].price;
+                    var itemName = result[0].product_name;
                     
                     if (stockQty >= howMany) {	
                         console.log("The item you are requesting is in stock");
+                        console.log("There are " + stockQty + " of " + itemName + " in inventory");
                         inquirer.prompt([
                         { name: "proceed",
                           message: "Would you like to proceed with your order?"
@@ -72,7 +79,12 @@ function start()
                         		if (err) throw err;
                         		console.log("Success!!");
                         		console.log("Your total comes to " + total + " dollars.");
-                        		console.log("Thank you for shopping at Bamazon.")
+                        		console.log("Thank you for shopping at Bamazon.");
+                        		console.log("");
+                        		console.log("There are now " + updatedQty + " of " + itemName + " left in inventory");
+                        		console.log("");
+                        		console.log("");
+                        		start();
                         		
                     			})
                         	}
